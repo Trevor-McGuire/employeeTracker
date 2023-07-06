@@ -1,98 +1,141 @@
 const inquirer = require('inquirer')
 const fs = require('fs')
+const mysql = require('mysql');
 
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'Fabbom-huvrov-waxze5',
+  database: 'employeetrack_db'
+});
+
+const actionArray = [
+  "View all employees",
+  "Add employee",
+  "Update employee work role",
+  "View all work roles",
+  "Add work role",
+  "View all departments",
+  "Add department"
+]
+
+console.info(`
+
+███████╗███╗░░░███╗██████╗░██╗░░░░░░█████╗░██╗░░░██╗███████╗███████╗
+██╔════╝████╗░████║██╔══██╗██║░░░░░██╔══██╗╚██╗░██╔╝██╔════╝██╔════╝
+█████╗░░██╔████╔██║██████╔╝██║░░░░░██║░░██║░╚████╔╝░█████╗░░█████╗░░
+██╔══╝░░██║╚██╔╝██║██╔═══╝░██║░░░░░██║░░██║░░╚██╔╝░░██╔══╝░░██╔══╝░░
+███████╗██║░╚═╝░██║██║░░░░░███████╗╚█████╔╝░░░██║░░░███████╗███████╗
+╚══════╝╚═╝░░░░░╚═╝╚═╝░░░░░╚══════╝░╚════╝░░░░╚═╝░░░╚══════╝╚══════╝
+
+████████╗██████╗░░█████╗░░█████╗░██╗░░██╗███████╗██████╗░
+╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║░██╔╝██╔════╝██╔══██╗
+░░░██║░░░██████╔╝███████║██║░░╚═╝█████═╝░█████╗░░██████╔╝
+░░░██║░░░██╔══██╗██╔══██║██║░░██╗██╔═██╗░██╔══╝░░██╔══██╗
+░░░██║░░░██║░░██║██║░░██║╚█████╔╝██║░╚██╗███████╗██║░░██║
+░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
+
+`)
 inquirer
   .prompt([
     {
-      type: 'input',
-      message: 'What is the title of the project?',
-      name: 'title',
-    },
-    {
-      type: 'input',
-      message: 'Give a paragraph describing the project.',
-      name: 'descPara',
-    },
-    {
-      type: 'input',
-      message: 'Give instalation instructions in the form of bullet points. (use a single line and seperate bullets using the "*" key)',
-      name: 'iBlt',
-    },
-    {
-      type: 'input',
-      message: 'Give programe execution instructions in the form of bullet points. (use a single line and seperate bullets using the "*" key)',
-      name: 'exeBlt',
-    },
-    {
-      type: 'input',
-      message: 'Write a paragraph describing how the public can contribute to the project.',
-      name: 'contribPara',
-    },
-    {
-      type: 'input',
-      message: 'Write a paragraph describing how to test the application.',
-      name: 'testBlt',
-    },
-    {
-      type: 'input',
-      message: 'Enter your GitHub profile name.',
-      name: 'github',
-    },
-    {
-      type: 'input',
-      message: 'Enter your email address.',
-      name: 'email',
-      validate: function(email)
-      {
-          // Regex mail check (return true if valid mail)
-          return /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+([^<>()\.,;:\s@\"]{2,}|[\d\.]+))$/.test(email);
-      }
-    },
-    {
       type: 'list',
-      name: 'license',
-      message: 'Which license badge should should appear?',
-      choices: licenseArray
+      name: 'action',
+      message: 'What would you like to do?',
+      choices: actionArray
     },
   ])
   .then( function(response) {
-    fs.readFile('template.md', 'utf8', function(error, data) {
-      if (error) {
-        console.error(error)
-      } else {
-        
-      }
-      String.prototype.interpolate = function(params) {
-        const names = Object.keys(params);
-        const vals = Object.values(params);
-        return new Function(...names, `return \`${this}\`;`)(...vals);
-      }
-      
-      const template = data;
-      response.licenseBdg = licenseBdgArray[licenseArray.indexOf(response.license)]
-      const result = template.interpolate({
-        title: response.title,
-        descPara: response.descPara,
-        iBlt: "* " + response.iBlt.replace(/\*/g,"\n* "),
-        exeBlt: "* " + response.exeBlt.replace(/\*/g,"\n* "),
-        contribPara: response.contribPara,
-        testBlt: "* " + response.testBlt.replace(/\*/g,"\n* "),
-        license: response.license,
-        licenseBdg: response.licenseBdg,
-        github: response.github,
-        email: response.email,
-      });
-      fs.writeFile('GeneratedREADME.md', result, (err) =>
-        err ? console.error(err) : console.log('Success!')
-      )
-    })
+    const actionInt = actionArray.indexOf(response.action)
+    const actionVal = response.action
+    console.info(`Action Choosen: ${actionVal} (${actionInt})`)
+    switch (actionInt) {
+      case 0:viewAllEmployees();break;
+      case 1:AddEmployee();break;
+      case 2:UpdateEmployeeWorkRole();break;
+      case 3:ViewAllWorkRoles();break;
+      case 4:AddWorkRole();break;
+      case 5:ViewAllDepartments();break;
+      case 6:AddDepartment();break;
+    }
   })
 
-function generateMarkdown(data) {
-  return `# ${data.title}
-  ## license 
-  ${renderLicenseBadge(license)}
-  `
-}
-
-
+  const viewAllEmployees = () => {
+    connection.query('SELECT * FROM employee ORDER BY last_name', (err, rows) => {
+      console.log(Object.keys(rows[0]));
+      console.log(rows.forEach(e => console.log(`${e.last_name}, ${e.first_name}`)));
+    });
+  }
+  const AddEmployee = () => {
+    console.info("AddEmployee()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  const UpdateEmployeeWorkRole = () => {
+    console.info("UpdateEmployeeWorkRole()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  const ViewAllWorkRoles = () => {
+    console.info("ViewAllWorkRoles()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  const AddWorkRole = () => {
+    console.info("AddWorkRole()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  const ViewAllDepartments = () => {
+    console.info("ViewAllDepartments()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  const AddDepartment = () => {
+    console.info("AddDepartment()")
+    connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected!');
+      connection.query('SELECT * FROM employee', (err, rows) => {
+        if (err) throw err;
+        console.log('Data received from Db:\n');
+        console.log(rows);
+      });
+    });
+  }
+  
