@@ -36,7 +36,8 @@ console.info(`
 ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
 
 `)
-inquirer
+const startInquire = () => {
+  inquirer
   .prompt([
     {
       type: 'list',
@@ -45,11 +46,10 @@ inquirer
       choices: actionArray
     },
   ])
-  .then( function(response) {
-    const actionInt = actionArray.indexOf(response.action)
-    const actionVal = response.action
-    console.info(`Action Choosen: ${actionVal} (${actionInt})`)
-    switch (actionInt) {
+  .then((response) => {
+    console.log("\n")
+    // takes index value of prompt and calls a specific function
+    switch (actionArray.indexOf(response.action)) {
       case 0:viewAllEmployees();break;
       case 1:AddEmployee();break;
       case 2:UpdateEmployeeWorkRole();break;
@@ -59,83 +59,73 @@ inquirer
       case 6:AddDepartment();break;
     }
   })
-
-  const viewAllEmployees = () => {
-    connection.query('SELECT * FROM employee ORDER BY last_name', (err, rows) => {
-      console.log(Object.keys(rows[0]));
-      console.log(rows.forEach(e => console.log(`${e.last_name}, ${e.first_name}`)));
-    });
-  }
-  const AddEmployee = () => {
-    console.info("AddEmployee()")
-    connection.connect((err) => {
+}
+startInquire()
+// select, order, and print all employee last and first names to console
+const viewAllEmployees = () => {
+  connection.query('SELECT * FROM employee ORDER BY last_name', (err, rows) => {
+    console.log(rows.forEach(e => console.log(`${e.last_name}, ${e.first_name}`)));
+    startInquire()
+  });
+}
+const AddEmployee = () => {
+  console.info("AddEmployee()")
+  connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected!');
+    connection.query('SELECT * FROM employee', (err, rows) => {
       if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
+      console.log('Data received from Db:\n');
+      console.log(rows);
     });
-  }
-  const UpdateEmployeeWorkRole = () => {
-    console.info("UpdateEmployeeWorkRole()")
-    connection.connect((err) => {
+  });
+}
+const UpdateEmployeeWorkRole = () => {
+  console.info("UpdateEmployeeWorkRole()")
+  connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected!');
+    connection.query('SELECT * FROM employee', (err, rows) => {
       if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
+      console.log('Data received from Db:\n');
+      console.log(rows);
     });
-  }
-  const ViewAllWorkRoles = () => {
-    console.info("ViewAllWorkRoles()")
-    connection.connect((err) => {
+  });
+}
+const ViewAllWorkRoles = () => {
+  connection.query('SELECT * FROM work_role ORDER BY title', (err, rows) => {
+    console.log(rows.forEach(e => console.log(e.title)));
+    startInquire()
+  });
+}
+const AddWorkRole = () => {
+  console.info("AddWorkRole()")
+  connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected!');
+    connection.query('SELECT * FROM employee', (err, rows) => {
       if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
+      console.log('Data received from Db:\n');
+      console.log(rows);
     });
-  }
-  const AddWorkRole = () => {
-    console.info("AddWorkRole()")
-    connection.connect((err) => {
+  });
+}
+const ViewAllDepartments = () => {
+  connection.query('SELECT * FROM department ORDER BY department_name', (err, rows) => {
+    console.log(rows.forEach(e => console.log(e.department_name)));
+    startInquire()
+  });
+}
+const AddDepartment = () => {
+  console.info("AddDepartment()")
+  connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected!');
+    connection.query('SELECT * FROM employee', (err, rows) => {
       if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
+      console.log('Data received from Db:\n');
+      console.log(rows);
     });
-  }
-  const ViewAllDepartments = () => {
-    console.info("ViewAllDepartments()")
-    connection.connect((err) => {
-      if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
-    });
-  }
-  const AddDepartment = () => {
-    console.info("AddDepartment()")
-    connection.connect((err) => {
-      if (err) throw err;
-      console.log('Connected!');
-      connection.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
-        console.log('Data received from Db:\n');
-        console.log(rows);
-      });
-    });
-  }
+  });
+}
   
