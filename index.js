@@ -1,26 +1,14 @@
 const inquirer = require('inquirer')
-const fs = require('fs')
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
-const { v4: uuidv4 } = require('uuid');
-uuidv4()
-
+require('dotenv').config()
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Fabbom-huvrov-waxze5',
-  database: 'employeetrack_db'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  multipleStatements: true,
 });
-
-const actionArray = [
-  "View all employees",
-  "Add employee",
-  "Update employee work role",
-  "View all work roles",
-  "Add work role",
-  "View all departments",
-  "Add department"
-]
 
 console.info(`
 
@@ -39,127 +27,143 @@ console.info(`
 ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝
 
 `)
-const startInquire = () => {
+
+function start() {
   inquirer
   .prompt([
     {
       type: 'list',
       name: 'action',
       message: 'What would you like to do?',
-      choices: actionArray
+      choices: [
+        "Add A Department",
+        "Add A Role",
+        "Add An Employee",
+        "Update An Employee Role",
+        "View All Departments",
+        "View All Employees",
+        "View All Roles",
+      ]
     },
   ])
-  .then((response) => {
-    console.log("\n")
-    // takes index value of prompt and calls a specific function
-    switch (actionArray.indexOf(response.action)) {
-      case 0:viewAllEmployees();break;
-      case 1:AddEmployee();break;
-      case 2:UpdateEmployeeWorkRole();break;
-      case 3:ViewAllWorkRoles();break;
-      case 4:AddWorkRole();break;
-      case 5:ViewAllDepartments();break;
-      case 6:AddDepartment();break;
+  .then( (response) => {
+    if (response.action === "Add A Department") {
+      let message = ['What is the name of the new department?']
+      let table = `department`
+      let headers = `department_name`
+      add(message,table,headers)
+    }
+    if (response.action === "Add A Role") {
+      let messageArr = [
+        'What is the new role title?',
+        'What is the salary for the role?',
+        'What department oversees the role?'
+      ]
+      let table = `role`
+      let headers = `title,salary,department_id`
+      add(messageArr,table,headers)
+    }
+    if (response.action === "Add An Employee") {
+      let messageArr = [
+        'What is the employee\'s first name?',
+        'What is the employee\'s last name?',
+        'What is the role id for the employee?',
+        'What is the manager id for the employee?'
+      ]
+      let table = `employee`
+      let headers = `first_name, last_name, role_id, manager_id`
+      add(messageArr,table,headers)
+    }
+    if (response.action === "Update An Employee Role") {
+      update()
+    }
+    if (response.action === "View All Departments") {
+      view(`department`)
+    }
+    if (response.action === "View All Employees") {
+      view(`employee`)
+    }
+    if (response.action === "View All Roles") {
+      view(`role`)
     }
   })
 }
-startInquire()
 
-// select, order, and print all employee last and first names to console
-const viewAllEmployees = () => {
-  connection.query('SELECT * FROM employee ORDER BY last_name', (err, rows) => {
-    console.log(rows.forEach(e => console.log(`${e.last_name}, ${e.first_name}`)));
-    startInquire()
-  });
-}
-const AddEmployee = async () => {
-  await inquirer
-  .prompt([
-    {
-      type: 'input',
-      name: 'first_name',
-      message: 'What is the employee\'s first name?',
-    },
-    {
-      type: 'input',
-      name: 'last_name',
-      message: 'What is the employee\'s last name?',
-    },
-    {
-      type: 'input',
-      name: 'role_id',
-      message: 'What is their role?',
-    },
-    {
-      type: 'input',
-      name: 'manager_id',
-      message: 'Who is their manager?',
-    },
-  ])
-  .then((response) => {
-    var sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`;
-    connection.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("1 record inserted");
+
+const view = (table) =>{
+  let myPromise = new Promise(function(myResolve, myReject) {
+    connection.query(`USE employeetrack_db;SELECT * FROM ${table};`, (err, results) => {
+      if (err) throw err
+      myResolve(results[1])
     });
-    viewAllEmployees()
+  });
+  myPromise.then(function(value) {
+    console.table(value);
+    start()
+  });
+};
+
+const add = (messageArr,table,headers,values) => {
+  const prompts = []
+  for (i=0 ; i<messageArr.length ; i++) {
+    let question = {
+      type: 'input',
+      name: `action${i}`,
+      message: messageArr[i]
+    }
+    prompts.push(question)
+  }
+  inquirer
+  .prompt(prompts)
+  .then((response) => {
+    sql = `INSERT INTO ${table} (${headers}) VALUES ('${Object.values(response).toString().replace(/,/g,"','")}');`
+    connection.query(sql, (err) => {
+      if (err) throw err
+    });
   })
-  
+  .then((response) => {
+    view(table)
+  })
 }
-const UpdateEmployeeWorkRole = () => {
-  connection.query('SELECT * FROM employee ORDER BY last_name', (err, rows) => {
-    const employeeArray = []
-    rows.forEach(e => employeeArray.push(`${e.last_name}, ${e.first_name}`));
-    console.log(employeeArray)
+const update = () => {
+  let myPromise = new Promise(function(myResolve, myReject) {
+    connection.query('SELECT last_name, first_name, id FROM employee ORDER BY last_name', (err, results) => {
+      if (err) throw err
+      myResolve(results)
+    });
+  });
+  myPromise.then(function(value) {
+    let nameArr = []
+    value.forEach(element => {
+      nameArr.push(Object.values(element).toString())
+    });
     inquirer
     .prompt([
       {
         type: 'list',
-        name: 'employee',
-        message: 'What employee needs their work role changed?',
-        choices: employeeArray
+        name: 'name',
+        message: 'Which employee needs a new role id?',
+        choices: nameArr
+      },
+      {
+        type: 'input',
+        name: 'role',
+        message: 'What is the new role id?',
       },
     ])
-    .then((response) => {
-      console.log(response.employee,"asdf")
+    .then( (response) => {
+      let name = response.name
+      let index = name.lastIndexOf(",") + 1
+      let len = name.length
+      let id = name.toString().slice(index,len)
+      sql = `UPDATE employee SET role_id = ${response.role} WHERE id = ${id}`
+      connection.query(sql, (err) => {
+        if (err) throw err
+      });
     })
-    // startInquire()
-  })
-}
-const ViewAllWorkRoles = () => {
-  connection.query('SELECT * FROM work_role ORDER BY title', (err, rows) => {
-    console.log(rows.forEach(e => console.log(e.title)));
-    startInquire()
+    .then((response) => {
+      view(`employee`)
+    })
   });
 }
-const AddWorkRole = () => {
-  console.info("AddWorkRole()")
-  connection.connect((err) => {
-    if (err) throw err;
-    console.log('Connected!');
-    connection.query('SELECT * FROM employee', (err, rows) => {
-      if (err) throw err;
-      console.log('Data received from Db:\n');
-      console.log(rows);
-    });
-  });
-}
-const ViewAllDepartments = () => {
-  connection.query('SELECT * FROM department ORDER BY department_name', (err, rows) => {
-    console.log(rows.forEach(e => console.log(e.department_name)));
-    startInquire()
-  });
-}
-const AddDepartment = () => {
-  console.info("AddDepartment()")
-  connection.connect((err) => {
-    if (err) throw err;
-    console.log('Connected!');
-    connection.query('SELECT * FROM employee', (err, rows) => {
-      if (err) throw err;
-      console.log('Data received from Db:\n');
-      console.log(rows);
-    });
-  });
-}
-  
+start()
