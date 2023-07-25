@@ -156,6 +156,7 @@ const update = () => {
       let index = name.lastIndexOf(",") + 1
       let len = name.length
       let id = name.toString().slice(index,len)
+
       sql = `UPDATE employee SET role_id = ${response.role} WHERE id = ${id}`
       connection.query(sql, (err) => {
         if (err) throw err
