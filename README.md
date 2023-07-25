@@ -1,43 +1,56 @@
-WHEN I start the application
-THEN I am presented with the following options: 
-  view all departments
-  view all roles
-  view all employees
-  add a department
-  add a role
-  add an employee
-  update an employee role
+# Employee Tracker
 
-WHEN I choose to view all departments
-THEN I am presented with a formatted table showing department names and department ids
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-WHEN I choose to view all roles
-THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+## Table of Contents  
+1. [Description](#description)
+2. [Installing](#installing)
+3. [Executing program](#executing-program)
+4. [Contribution Guidelines](#contribution-guidelines)
+5. [Test Instruction](#test-instruction)
+6. [License](#license)
+7. [Questions](#questions)
 
-WHEN I choose to view all employees
-THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
+## Description
 
-WHEN I choose to add a department
-THEN I am prompted to enter the name of the department and that department is added to the database
-
-WHEN I choose to add a role
-THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-
-WHEN I choose to add an employee
-THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
-
-WHEN I choose to update an employee role
-THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+ Employee Tracker is a CMS to view/add/update a companies departments/roles/employees. It uses a terminal to ask simple prompts that guide the user into changing and viewing the database.
 
 
+## Installing
 
-init
-  ad
-    
-  ar
-  ae
-  ud
-  vd
+ * 
+* download all the code
+* have sql database installed on computer
+* run "npm i"
+* configure .env file
+* start with "npm run init"
+* begin program with "npm run start"
+* follow the terminal prompts
 
-  ve
-  vr
+
+## Executing program
+
+ * 
+
+
+## Contribution Guidelines
+
+ 
+
+
+## Test Instruction
+
+ * 
+
+
+## License
+
+ MIT License
+
+
+## Questions
+
+ [Trevor-McGuire](https://github.com/Trevor-McGuire/)
+
+ [trevor.mcguire.candidate@gmail.com](mailto:trevor.mcguire.candidate@gmail.com)
+ 
